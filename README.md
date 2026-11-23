@@ -1,10 +1,14 @@
 # Ducato CAN Recorder
 
-A Home Assistant OS app for recording passive CAN observations received from an ESPHome CAN proxy over MQTT. Start and stop captures from the Home Assistant sidebar and download completed CSV files.
+[![Add Ducato CAN Recorder to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FArnyminerZ%2Fha-app-can-recorder)
+
+A Home Assistant OS app for recording passive CAN observations received from an ESPHome CAN proxy over MQTT. Start and stop captures from the Home Assistant sidebar, download completed CSV files, and delete recordings you no longer need.
 
 > **Status:** Initial research build. The MQTT-to-CSV pipeline has been tested using a simulated frame; live vehicle CAN recording has not yet been validated. Use only with a CAN interface configured in **LISTENONLY** mode.
 
 ## Install as a Home Assistant app repository
+
+Click **Add to Home Assistant** above to prefill the repository URL, then select **Ducato CAN Recorder** in the app store and install it. Alternatively, follow the manual steps below.
 
 1. In **Home Assistant → Settings → Apps**, open the app store and its **⋮ → Repositories** menu.
 2. Add this repository URL: `https://github.com/ArnyminerZ/ha-app-can-recorder`.
@@ -33,7 +37,7 @@ The recorder saves `received_utc,session,seq,esp_ms,can_id_hex,extended,dlc,data
 
 - No commands are sent to the **vehicle** CAN bus. This app only sends MQTT commands to the ESPHome device, which must remain in CAN `LISTENONLY`.
 - MQTT/Wi-Fi can drop frames. Check missing sequence numbers and ESP drop counts after every session.
-- Recordings are written incrementally to the HAOS shared folder. Per-file limit defaults to 250 MB; old recordings are **not automatically deleted**.
+- Recordings are written incrementally to the HAOS shared folder. Per-file limit defaults to 250 MB; use **Delete** next to a completed CSV to remove it, after confirmation. Old recordings are **not automatically deleted**; deletion is permanent. Open recordings cannot be deleted.
 - Completed CSV downloads are served through Home Assistant ingress, not a publicly exposed host port.
 - The diagnostic test endpoint remains available for troubleshooting, but the test button is hidden in the regular UI.
 
