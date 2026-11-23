@@ -45,6 +45,7 @@ jobs:
         with:
           architectures: ${{ env.ARCHITECTURES }}
           image-name: ${{ env.IMAGE_NAME }}
+          registry-prefix: ghcr.io/arnyminerz
 
   build:
     name: Build ${{ matrix.arch }}
