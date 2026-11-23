@@ -36,3 +36,11 @@ The recorder saves `received_utc,session,seq,esp_ms,can_id_hex,extended,dlc,data
 - Recordings are written incrementally to the HAOS shared folder. Per-file limit defaults to 250 MB; old recordings are **not automatically deleted**.
 - Completed CSV downloads are served through Home Assistant ingress, not a publicly exposed host port.
 - The diagnostic test endpoint remains available for troubleshooting, but the test button is hidden in the regular UI.
+
+## Prebuilt images (GHCR)
+
+A GitHub Actions workflow builds and publishes multi-architecture images for `amd64` and `aarch64` from changes to `ducato_can_recorder/` or the build workflow. The app manifest points to `ghcr.io/arnyminerz/ha-app-can-recorder`, with the app `version` used as the image tag. The repository uses Home Assistant's composable image builder actions and also supports manual workflow runs.
+
+**Maintainer setup:** Once the workflow has successfully created the package, visit your GitHub profile → **Packages** → `ha-app-can-recorder` → **Package settings** → **Change visibility** → **Public**. GitHub Container Registry packages can default to private even when the source repository is public. Confirm the versioned multi-architecture image exists before attempting a fresh install. For subsequent releases, bump `ducato_can_recorder/config.yaml` version before pushing changed app code; otherwise an old image tag can be overwritten.
+
+Track builds at https://github.com/ArnyminerZ/ha-app-can-recorder/actions/workflows/build.yaml.
