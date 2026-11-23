@@ -3,9 +3,9 @@ version: "0.1.2"
 slug: "ducato_can_recorder"
 description: "Passive CAN capture via ESPHome and MQTT, with CSV downloads"
 url: "https://github.com/ArnyminerZ/ha-app-can-recorder"
+image: ghcr.io/arnyminerz/ha-app-can-recorder
 arch:
   - aarch64
-  - armv7
 startup: services
 boot: auto
 init: false
