@@ -76,7 +76,7 @@ CSV columns in order: `received_utc,session,seq,esp_ms,can_id_hex,extended,dlc,d
 
 Files are in `/share/ducato-can-recordings/`, which is mounted writable by HAOS. The `max_recording_mb` option (default **250**) caps a single recording; it does **not** cap aggregate folder size or automatically prune old recordings. Deletion is permanent. Be careful with buffering/file-size checks, sudden restarts, and limited Pi storage. Maintain incremental writes, explicit flush/finalize, safe filename handling, and protection against symlink traversal.
 
-The frontend is embedded in the `HTML` string in `recorder.py`, polled at roughly **2-second** intervals. Only show **Start** in `idle`, only show **Stop** in `recording`, and disable/withhold controls during transitions. Keep HAOS ingress-relative paths for fetch, downloads, and API calls. Do not expose unprotected direct HTTP ports or move recordings to `/config/www`.
+The frontend is embedded in the `HTML` string in `recorder.py`, polled at roughly **2-second** intervals. It uses Home Assistant CSS theme variables where available, light/dark fallbacks and bundled inline Material Design Icons SVG symbols (Pictogrammers Free License); do not add a dependency on internet/CDN availability for the app's icon rendering. Keep accessible contrast, keyboard focus states, reduced-motion support, responsive file buttons and safe DOM text insertion. Only show **Start** in `idle`, only show **Stop** in `recording`, and disable/withhold controls during transitions. Keep HAOS ingress-relative paths for fetch, downloads, and API calls. Do not expose unprotected direct HTTP ports or move recordings to `/config/www`.
 
 ## Diagnostics, known limits, tests
 
