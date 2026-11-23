@@ -2,7 +2,7 @@
 
 [![Add Ducato CAN Recorder to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FArnyminerZ%2Fha-app-can-recorder)
 
-A Home Assistant OS app for recording passive CAN observations received from an ESPHome CAN proxy over MQTT. Start and stop captures from the Home Assistant sidebar, download completed CSV files, and delete recordings you no longer need.
+A Home Assistant OS app for recording passive CAN observations received from an ESPHome CAN proxy over MQTT. Start and stop captures from a modern, theme-aware Home Assistant sidebar interface, download completed CSV files, and delete recordings you no longer need.
 
 > **Status:** Initial research build. The MQTT-to-CSV pipeline has been tested using a simulated frame; live vehicle CAN recording has not yet been validated. Use only with a CAN interface configured in **LISTENONLY** mode.
 
@@ -33,6 +33,10 @@ ESPHome publishes:
 
 The recorder saves `received_utc,session,seq,esp_ms,can_id_hex,extended,dlc,data_hex`. It excludes known identifying standard IDs `0x3E0` and `0x082` and diagnostic-style extended IDs `0x18DAxxxx`. Do not assume other IDs are free of personal information.
 
+## Interface
+
+The recorder uses Home Assistant theme color variables when available, with accessible light/dark defaults, a responsive status dashboard, recording counters, and compact CSV file actions. Material Design Icons are **bundled as SVG symbols** so the interface works offline, without third-party scripts, fonts, or icon CDNs. The Stop and Delete actions use stronger, less washed-out destructive colors; file deletion still requires confirmation.
+
 ## Notes
 
 - No commands are sent to the **vehicle** CAN bus. This app only sends MQTT commands to the ESPHome device, which must remain in CAN `LISTENONLY`.
@@ -54,3 +58,7 @@ Track builds at https://github.com/ArnyminerZ/ha-app-can-recorder/actions/workfl
 Every new app version should have a matching **GitHub Release** and immutable tag (`v0.1.3`, `v0.1.4`, etc.). The manifest at `ducato_can_recorder/config.yaml` is the source of truth for the version. On a push that triggers the build workflow, GitHub Actions builds/publishes the GHCR image `ghcr.io/arnyminerz/ha-app-can-recorder:<version>` and, **only after the image build succeeds**, creates the corresponding GitHub Release with automatically generated release notes. Existing images and releases are not overwritten. If you only edit documentation, no new app version is needed.
 
 Future maintainers and coding agents: see [AGENTS.md](AGENTS.md) for the MQTT protocol, ESPHome relationship, safety constraints, diagnostics, and release checklist.
+
+## Icon attribution
+
+Icons adapted from [Material Design Icons by Pictogrammers](https://github.com/Templarian/MaterialDesign), distributed under the project's [Pictogrammers Free License](https://github.com/Templarian/MaterialDesign/blob/master/LICENSE) (icon SVGs under Apache 2.0 or their respective licenses). SVG paths are embedded in `ducato_can_recorder/recorder.py` for offline operation.
