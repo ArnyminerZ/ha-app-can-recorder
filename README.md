@@ -45,6 +45,12 @@ The recorder saves `received_utc,session,seq,esp_ms,can_id_hex,extended,dlc,data
 
 A GitHub Actions workflow builds and publishes multi-architecture images for `amd64` and `aarch64` from changes to `ducato_can_recorder/` or the build workflow. The app manifest points to `ghcr.io/arnyminerz/ha-app-can-recorder`, with the app `version` used as the image tag. The repository uses Home Assistant's composable image builder actions and also supports manual workflow runs.
 
-**Maintainer setup:** Once the workflow has successfully created the package, visit your GitHub profile → **Packages** → `ha-app-can-recorder` → **Package settings** → **Change visibility** → **Public**. GitHub Container Registry packages can default to private even when the source repository is public. Confirm the versioned multi-architecture image exists before attempting a fresh install. For subsequent releases, bump `ducato_can_recorder/config.yaml` version before pushing changed app code; otherwise an old image tag can be overwritten.
+**Maintainer setup:** Once the workflow has successfully created the package, visit your GitHub profile → **Packages** → `ha-app-can-recorder` → **Package settings** → **Change visibility** → **Public**. GitHub Container Registry packages can default to private even when the source repository is public. Confirm the versioned multi-architecture image exists before attempting a fresh install. For subsequent releases, bump `ducato_can_recorder/config.yaml` version before pushing changed app code; version tags are treated as immutable.
 
 Track builds at https://github.com/ArnyminerZ/ha-app-can-recorder/actions/workflows/build.yaml.
+
+## Versions and GitHub Releases
+
+Every new app version should have a matching **GitHub Release** and immutable tag (`v0.1.3`, `v0.1.4`, etc.). The manifest at `ducato_can_recorder/config.yaml` is the source of truth for the version. On a push that triggers the build workflow, GitHub Actions builds/publishes the GHCR image `ghcr.io/arnyminerz/ha-app-can-recorder:<version>` and, **only after the image build succeeds**, creates the corresponding GitHub Release with automatically generated release notes. Existing images and releases are not overwritten. If you only edit documentation, no new app version is needed.
+
+Future maintainers and coding agents: see [AGENTS.md](AGENTS.md) for the MQTT protocol, ESPHome relationship, safety constraints, diagnostics, and release checklist.
