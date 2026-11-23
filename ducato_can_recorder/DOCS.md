@@ -13,6 +13,10 @@ The existing Mosquitto broker is required, together with an ESPHome CAN listener
 
 CSV recordings persist under `/share/ducato-can-recordings/`. The **Saved recordings** list includes **Download** and **Delete** actions. Deletion asks for confirmation and cannot be undone; the current recording cannot be deleted while open. No automatic deletion is performed. Recordings may reveal vehicle activity; don't publish them indiscriminately.
 
+## Appearance
+
+The interface uses Home Assistant theme color variables where available, light/dark fallbacks, a responsive stats dashboard and bundled Material Design SVG icons. No internet access or third-party CDN is needed to render the UI.
+
 ## Recording controls
 
 The **Start recording** button is available only while idle and connected to MQTT. The **Stop recording** button replaces it during active recording. Both are unavailable during startup or finalization, so you cannot accidentally submit conflicting commands.
