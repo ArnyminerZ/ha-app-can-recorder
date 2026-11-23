@@ -87,5 +87,6 @@ jobs:
           architectures: ${{ env.ARCHITECTURES }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ env.IMAGE_NAME }}
+          registry-prefix: ghcr.io/arnyminerz
           image-tags: |
             ${{ needs.prepare.outputs.version }}
