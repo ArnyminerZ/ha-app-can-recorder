@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  ARCHITECTURES: '["amd64", "aarch64", "armv7"]'
+  ARCHITECTURES: '["amd64", "aarch64"]'
   IMAGE_NAME: ha-app-can-recorder
 
 concurrency:
@@ -69,7 +69,6 @@ jobs:
           image-tags: |
             ${{ needs.prepare.outputs.version }}
           push: "true"
-          skip-existing: ${{ needs.prepare.outputs.version }}
           version: ${{ needs.prepare.outputs.version }}
 
   manifest:
@@ -89,4 +88,3 @@ jobs:
           image-name: ${{ env.IMAGE_NAME }}
           image-tags: |
             ${{ needs.prepare.outputs.version }}
-          skip-existing: ${{ needs.prepare.outputs.version }}
