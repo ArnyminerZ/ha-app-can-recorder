@@ -1,6 +1,6 @@
 # Ducato CAN Recorder
 
-Use the sidebar interface to start and stop a capture and download completed CSV files.
+Use the sidebar interface to start and stop a capture, download completed CSV files, and permanently delete unwanted recordings.
 
 The existing Mosquitto broker is required, together with an ESPHome CAN listener using the `furgo/can/*` MQTT protocol documented in the repository README.
 
@@ -11,7 +11,11 @@ The existing Mosquitto broker is required, together with an ESPHome CAN listener
 - `mqtt_username` / `mqtt_password`: Credentials for your existing MQTT account.
 - `max_recording_mb`: Maximum size of a single recording (default 250 MB).
 
-CSV recordings persist under `/share/ducato-can-recordings/` and must be removed manually when no longer needed. Recordings may reveal vehicle activity; don't publish them indiscriminately.
+CSV recordings persist under `/share/ducato-can-recordings/`. The **Saved recordings** list includes **Download** and **Delete** actions. Deletion asks for confirmation and cannot be undone; the current recording cannot be deleted while open. No automatic deletion is performed. Recordings may reveal vehicle activity; don't publish them indiscriminately.
+
+## Recording controls
+
+The **Start recording** button is available only while idle and connected to MQTT. The **Stop recording** button replaces it during active recording. Both are unavailable during startup or finalization, so you cannot accidentally submit conflicting commands.
 
 ## Diagnostics
 
