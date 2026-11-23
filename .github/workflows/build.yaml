@@ -28,6 +28,8 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
+      - name: Check Python syntax
+        run: python3 -m py_compile ducato_can_recorder/recorder.py
       - name: Read version from Home Assistant app manifest
         id: version
         shell: bash
