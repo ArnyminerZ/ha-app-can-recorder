@@ -421,6 +421,15 @@ const icons={
  delete:'<svg class="icon icon-sm" aria-hidden="true"><use href="#mdi-delete-outline"></use></svg>',
  empty:'<svg class="icon" aria-hidden="true"><use href="#mdi-file-delimited-outline"></use></svg>'
 };
+function svgIcon(name){
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('class','icon icon-sm');
+ svg.setAttribute('aria-hidden','true');
+ const use=document.createElementNS('http://www.w3.org/2000/svg','use');
+ use.setAttribute('href','#mdi-'+name);
+ svg.append(use);
+ return svg;
+}
 const fmt=n=>new Intl.NumberFormat().format(n||0);
 const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':n>=1024?(n/1024).toFixed(1)+' KB':fmt(n)+' B';
 const duration=n=>{const seconds=Math.floor(n||0),m=Math.floor(seconds/60),h=Math.floor(m/60);return h?h+'h '+(m%60)+'m':m?m+'m '+seconds%60+'s':seconds+'s';};
@@ -429,10 +438,10 @@ function renderStatus(s){
  lastStatus=s;
  const names={idle:'Idle',starting:'Starting',recording:'Recording',stopping:'Stopping'};
  const badge=el('recordBadge');
- badge.textContent=names[s.state]||s.state;
+ badge.replaceChildren(svgIcon(s.state==='recording'?'record-circle-outline':s.state==='idle'?'check-circle-outline':'clock-outline'),document.createTextNode(names[s.state]||s.state));
  badge.className='badge'+(s.state==='recording'?' recording':s.state==='starting'||s.state==='stopping'?' transition':'');
  const mqtt=el('mqttBadge');
- mqtt.textContent=s.mqtt_connected?'MQTT connected':'MQTT disconnected';
+ mqtt.replaceChildren(svgIcon(s.mqtt_connected?'wifi':'wifi-off'),document.createTextNode(s.mqtt_connected?'MQTT connected':'MQTT disconnected'));
  mqtt.className='badge '+(s.mqtt_connected?'online':'offline');
  el('reason').textContent=s.reason|| (s.state==='idle'?'Ready for a new recording':'Waiting for ESPHome…');
  el('frames').textContent=fmt(s.frames);
