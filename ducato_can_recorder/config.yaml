@@ -1,0 +1,30 @@
+name: "Ducato CAN Recorder"
+version: "0.1.2"
+slug: "ducato_can_recorder"
+description: "Passive CAN capture via ESPHome and MQTT, with CSV downloads"
+url: "https://github.com/ArnyminerZ/ha-app-can-recorder"
+arch:
+  - aarch64
+  - armv7
+startup: services
+boot: auto
+init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:car-connected
+panel_title: CAN Recorder
+map:
+  - type: share
+    read_only: false
+options:
+  mqtt_host: core-mosquitto
+  mqtt_port: 1883
+  mqtt_username: ""
+  mqtt_password: ""
+  max_recording_mb: 250
+schema:
+  mqtt_host: str
+  mqtt_port: port
+  mqtt_username: str
+  mqtt_password: password
+  max_recording_mb: int(1,10000)
