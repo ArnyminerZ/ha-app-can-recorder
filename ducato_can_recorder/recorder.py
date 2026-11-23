@@ -251,29 +251,100 @@ def watchdog():
 
 threading.Thread(target=watchdog, daemon=True).start()
 
-HTML = """<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'>
-<style>body{font-family:system-ui;margin:24px;max-width:800px;background:#111;color:#eee}
-button{padding:12px 16px;margin:5px;font-size:17px}a{color:#7bd}li{margin:12px 0}
-.box{border:1px solid #666;border-radius:12px;padding:18px}</style>
-</head><body><h2>🚐 Ducato CAN Recorder</h2><div class='box'>
-<p><b>Status:</b> <span id='state'>Loading</span></p>
-<p id='stats'></p><p id='session'></p>
-<button onclick='act("start")'>▶ Start recording</button>
-<button onclick='act("stop")'>⏹ Stop recording</button>
-<p id='message'></p></div><h3>Completed recordings</h3><ul id='files'></ul>
+HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ducato CAN Recorder</title>
+<style>
+body{font-family:system-ui;margin:24px auto;padding:0 14px;max-width:800px;background:#111;color:#eee}
+button{padding:10px 14px;margin:5px;font-size:15px;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+a{color:#7bd}li{margin:12px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;overflow-wrap:anywhere}
+.box{border:1px solid #666;border-radius:12px;padding:18px}
+.danger{color:#ffb2b2}
+</style></head><body>
+<h2>🚐 Ducato CAN Recorder</h2><div class="box">
+<p><b>Status:</b> <span id="state">Loading</span></p>
+<p id="stats"></p><p id="session"></p>
+<button id="start" hidden disabled>▶ Start recording</button>
+<button id="stop" hidden disabled>⏹ Stop recording</button>
+<p id="message" role="status" aria-live="polite"></p>
+</div>
+<h3>Saved recordings</h3><ul id="files"></ul>
 <script>
-async function refresh(){try{
- let s=await(await fetch('api/status',{cache:'no-store'})).json();
- document.getElementById('state').textContent=s.state+(s.mqtt_connected?' · MQTT online':' · MQTT OFFLINE');
- document.getElementById('stats').textContent='Frames: '+s.frames+' · Missing seq: '+s.lost_sequences+' · ESP dropped: '+s.dropped_on_esp+' · Duration: '+s.duration_s+'s · Bytes on disk: '+s.bytes+' · '+s.reason;
- document.getElementById('session').textContent=s.session?'Current session: '+s.session:'';
- if(s.state==='idle') document.getElementById('message').textContent='';
- let a=await(await fetch('api/files',{cache:'no-store'})).json();
- let completed=a.filter(f=>f.name!==s.file || s.state==='idle');
- document.getElementById('files').innerHTML=completed.length?completed.map(f=>'<li><a href="download/'+encodeURIComponent(f.name)+'">'+f.name+'</a> ('+(f.size/1024/1024).toFixed(2)+' MB)</li>').join(''):'<li>No completed recordings yet</li>';
- }catch(e){document.getElementById('message').textContent=e}}
-async function act(action){try{let r=await fetch('api/'+action,{method:'POST'});let d=await r.json();document.getElementById('message').textContent=d.message || JSON.stringify(d);await refresh()}catch(e){document.getElementById('message').textContent=e}}
-setInterval(refresh,2000);refresh();</script></body></html>"""
+const stateEl=document.getElementById('state');
+const startBtn=document.getElementById('start');
+const stopBtn=document.getElementById('stop');
+const messageEl=document.getElementById('message');
+let pending=false;
+
+async function refresh(){
+ try {
+  const response=await fetch('api/status',{cache:'no-store'});
+  if(!response.ok)throw new Error('Unable to load recorder status');
+  const s=await response.json();
+  stateEl.textContent=s.state+(s.mqtt_connected?' · MQTT online':' · MQTT OFFLINE');
+  document.getElementById('stats').textContent='Frames: '+s.frames+' · Missing seq: '+s.lost_sequences+' · ESP dropped: '+s.dropped_on_esp+' · Duration: '+s.duration_s+'s · Bytes on disk: '+s.bytes+' · '+s.reason;
+  document.getElementById('session').textContent=s.session?'Current session: '+s.session:'';
+  startBtn.hidden=s.state!=='idle';
+  stopBtn.hidden=s.state!=='recording';
+  startBtn.disabled=pending||!s.mqtt_connected||s.state!=='idle';
+  stopBtn.disabled=pending||s.state!=='recording';
+  if(s.state==='idle'&&!pending)messageEl.textContent='';
+  const filesResponse=await fetch('api/files',{cache:'no-store'});
+  if(!filesResponse.ok)throw new Error('Unable to load saved recordings');
+  const files=await filesResponse.json();
+  const container=document.getElementById('files');
+  container.replaceChildren();
+  const completed=files.filter(f=>f.name!==s.file||s.state==='idle');
+  if(!completed.length){const li=document.createElement('li');li.textContent='No saved recordings yet';container.append(li);}
+  for(const f of completed){
+   const li=document.createElement('li');
+   const link=document.createElement('a');
+   link.href='download/'+encodeURIComponent(f.name);
+   link.textContent=f.name;
+   link.setAttribute('download',f.name);
+   const size=document.createElement('span');
+   size.textContent='('+(f.size/1024/1024).toFixed(2)+' MB)';
+   const del=document.createElement('button');
+   del.textContent='🗑 Delete';
+   del.className='danger';
+   del.disabled=pending;
+   del.addEventListener('click',()=>removeFile(f.name));
+   li.append(link,size,del);
+   container.append(li);
+  }
+ }catch(e){messageEl.textContent=String(e);}
+}
+async function act(action){
+ if(pending)return;
+ pending=true;
+ startBtn.disabled=true;
+ stopBtn.disabled=true;
+ try{
+  const r=await fetch('api/'+action,{method:'POST'});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.message||'Request failed');
+  messageEl.textContent=d.message||'Request accepted';
+ }catch(e){messageEl.textContent=String(e);}
+ finally{pending=false;await refresh();}
+}
+async function removeFile(name){
+ if(pending)return;
+ if(!confirm('Permanently delete '+name+'? This cannot be undone.'))return;
+ pending=true;
+ try{
+  const r=await fetch('api/files/'+encodeURIComponent(name),{method:'DELETE'});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.message||'Deletion failed');
+  messageEl.textContent=d.message||'Recording deleted';
+ }catch(e){messageEl.textContent=String(e);}
+ finally{pending=false;await refresh();}
+}
+startBtn.addEventListener('click',()=>act('start'));
+stopBtn.addEventListener('click',()=>act('stop'));
+setInterval(refresh,2000);
+refresh();
+</script></body></html>"""
 
 
 @app.get("/")
@@ -293,6 +364,27 @@ def files_api():
         {"name": x.name, "size": x.stat().st_size}
         for x in sorted(DIR.glob("ducato_can_*.csv"), reverse=True)[:200]
     ])
+
+
+@app.delete("/api/files/<name>")
+def delete_file(name):
+    """Delete a completed CSV, never the currently open recording."""
+    if (name != pathlib.Path(name).name or
+            not name.endswith(".csv") or not name.startswith("ducato_can_")):
+        return jsonify(ok=False, message="Invalid recording filename"), 400
+    with LOCK:
+        target = DIR / name
+        if target.is_symlink() or not target.is_file():
+            return jsonify(ok=False, message="Recording not found"), 404
+        if target == file_path and fp is not None:
+            return jsonify(ok=False, message="Stop recording before deleting its file"), 409
+        try:
+            target.unlink()
+        except OSError:
+            log.exception("Failed to delete recording: %s", name)
+            return jsonify(ok=False, message="Could not delete recording"), 500
+        log.info("Deleted completed CAN recording: %s", name)
+        return jsonify(ok=True, message="Deleted " + name)
 
 
 @app.post("/api/start")
