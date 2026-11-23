@@ -70,6 +70,7 @@ jobs:
           image-tags: |
             ${{ needs.prepare.outputs.version }}
           push: "true"
+          skip-existing: ${{ needs.prepare.outputs.version }}
           version: ${{ needs.prepare.outputs.version }}
 
   manifest:
@@ -90,3 +91,29 @@ jobs:
           registry-prefix: ghcr.io/arnyminerz
           image-tags: |
             ${{ needs.prepare.outputs.version }}
+          skip-existing: ${{ needs.prepare.outputs.version }}
+
+  release:
+    name: Create GitHub release
+    needs: [prepare, manifest]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish versioned GitHub release after successful image publication
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="v${VERSION}"
+          if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release ${tag} already exists; not modifying an existing release."
+            exit 0
+          fi
+          gh release create "${tag}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --title "v${VERSION}" \
+            --generate-notes
